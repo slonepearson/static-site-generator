@@ -1,4 +1,5 @@
 from enum import Enum
+from leafnode import LeafNode
 
 class TextType(Enum):
     TEXT = "text"
@@ -27,5 +28,23 @@ class TextNode():
         return f"TextNode({self.text}, {self.text_type.value}, {self.url})"
 
 
+def text_node_to_html_node(text_node):
+    
+    value = text_node.text
+    text_type = text_node.text_type
 
-
+    match text_type.value:
+        case "text":
+            return LeafNode(None, value)
+        case "bold":
+            return LeafNode("b", value)
+        case "italic":
+            return LeafNode("i", value)
+        case "code":
+            return LeafNode("code", value)
+        case "link":
+            return LeafNode("a", value, {"href":text_node.url})
+        case "image":
+            return LeafNode("img", "", {"src":text_node.url, "alt":value})
+        case _:
+            raise Exception("Not a supported inline element")
