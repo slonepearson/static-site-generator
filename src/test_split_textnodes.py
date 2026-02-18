@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType, text_node_to_html_node
-from split_text_nodes import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from split_text_nodes import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
 
 class TestSplitNodes(unittest.TestCase):
     def test_split_code_block(self):
@@ -124,3 +124,45 @@ class TestSplitNodes(unittest.TestCase):
         new_nodes = split_nodes_image([node])
         self.assertListEqual([TextNode("image",TextType.IMAGE, "https://some_random_image.jpg")], new_nodes)
 
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        text_nodes = text_to_textnodes(text)
+        self.assertListEqual([
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ],text_nodes)
+
+    def test_text_to_textnodes_two(self):
+        text = "This is _text_ with a **bold** word and a `code block` and a [link](https://boot.dev) and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) with more text"
+        text_nodes = text_to_textnodes(text)
+        self.assertListEqual([
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.ITALIC),
+            TextNode(" with a ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE,"https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" with more text", TextType.TEXT)
+        ],text_nodes)
+
+    def test_text_to_textnodes_three(self):
+        text = "This is only going to be raw text"
+        text_nodes = text_to_textnodes(text)
+        self.assertListEqual([TextNode("This is only going to be raw text", TextType.TEXT)],text_nodes)
+
+    def test_text_to_textnodes_four(self):
+        text = "**This is a bolded sentance**"
+        text_nodes = text_to_textnodes(text)
+        self.assertListEqual([TextNode("This is a bolded sentance", TextType.BOLD)], text_nodes)
